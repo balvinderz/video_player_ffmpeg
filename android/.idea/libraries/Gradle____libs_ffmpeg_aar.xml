@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: ./libs/ffmpeg.aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/extension-ffmpeg-release/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/extension-ffmpeg-release/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/extension-ffmpeg-release/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
