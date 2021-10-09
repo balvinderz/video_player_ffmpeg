@@ -19,6 +19,21 @@ class VolumeMessage {
   int textureId;
   double volume;
 }
+class SubtitleMessage
+{
+  int textureId;
+  List<String> subtitles;
+  int index;
+}
+
+class AudioMessage
+{
+  int textureId;
+  List<String> audios;
+  int index;
+
+
+}
 
 class PlaybackSpeedMessage {
   int textureId;
@@ -55,6 +70,13 @@ abstract class VideoPlayerApi {
   void seekTo(PositionMessage msg);
   void pause(TextureMessage msg);
   void setMixWithOthers(MixWithOthersMessage msg);
+  void setAudio(AudioMessage msg);
+  AudioMessage getAudios(TextureMessage msg);
+  void setAudioByIndex(AudioMessage msg);
+  void setSubtitle(SubtitleMessage msg);
+  SubtitleMessage getSubtitles(TextureMessage msg);
+  void setSubtitleByIndex(SubtitleMessage msg);
+
 }
 
 void configurePigeon(PigeonOptions opts) {

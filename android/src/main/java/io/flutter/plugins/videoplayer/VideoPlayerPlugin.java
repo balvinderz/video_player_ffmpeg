@@ -7,23 +7,29 @@ package io.flutter.plugins.videoplayer;
 import android.content.Context;
 import android.os.Build;
 import android.util.LongSparseArray;
+import com.google.android.exoplayer2.text.Subtitle;
 import io.flutter.FlutterInjector;
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
+import io.flutter.plugins.videoplayer.Messages.AudioMessage;
 import io.flutter.plugins.videoplayer.Messages.CreateMessage;
 import io.flutter.plugins.videoplayer.Messages.LoopingMessage;
 import io.flutter.plugins.videoplayer.Messages.MixWithOthersMessage;
 import io.flutter.plugins.videoplayer.Messages.PlaybackSpeedMessage;
 import io.flutter.plugins.videoplayer.Messages.PositionMessage;
+import io.flutter.plugins.videoplayer.Messages.SubtitleMessage;
 import io.flutter.plugins.videoplayer.Messages.TextureMessage;
 import io.flutter.plugins.videoplayer.Messages.VideoPlayerApi;
 import io.flutter.plugins.videoplayer.Messages.VolumeMessage;
 import io.flutter.view.TextureRegistry;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.net.ssl.HttpsURLConnection;
 
 /** Android platform implementation of the VideoPlayerPlugin. */
@@ -143,7 +149,13 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               options);
     } else {
       @SuppressWarnings("unchecked")
-      Map<String, String> httpHeaders = arg.getHttpHeaders();
+      Map<Object, Object> httpHeaders = arg.getHttpHeaders();
+      Map<String,String> newMap =new HashMap<String,String>();
+      for (Map.Entry<Object, Object> entry : httpHeaders.entrySet()) {
+        if(entry.getValue() instanceof String){
+          newMap.put(entry.getKey().toString(), (String) entry.getValue());
+        }
+      }
       player =
           new VideoPlayer(
               flutterState.applicationContext,
@@ -151,7 +163,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               handle,
               arg.getUri(),
               arg.getFormatHint(),
-              httpHeaders,
+              newMap,
               options);
     }
     videoPlayers.put(handle.id(), player);
@@ -203,6 +215,49 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
   public void pause(TextureMessage arg) {
     VideoPlayer player = videoPlayers.get(arg.getTextureId());
     player.pause();
+  }
+  public AudioMessage getAudios(TextureMessage arg)
+  {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    AudioMessage result = new AudioMessage();
+    result.setAudios(Arrays.asList(player.getAudios().toArray()));
+    return result;
+
+  }
+  public void setAudio(AudioMessage arg)
+  {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    player.setAudio(arg.getAudios().get(0).toString());
+
+  }
+
+  public void setAudioByIndex(AudioMessage arg)
+  {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    player.setAudioByIndex(arg.getIndex().intValue());
+
+  }
+
+  public SubtitleMessage getSubtitles(TextureMessage arg)
+  {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    SubtitleMessage result = new SubtitleMessage();
+    result.setSubtitles(Arrays.asList(player.getSubtitles().toArray()));
+    return result;
+
+  }
+  public void setSubtitle(SubtitleMessage arg)
+  {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    player.setSubtitle(arg.getSubtitles().get(0).toString());
+
+  }
+
+  public void setSubtitleByIndex(SubtitleMessage arg)
+  {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    player.setSubtitleByIndex(arg.getIndex().intValue());
+
   }
 
   @Override

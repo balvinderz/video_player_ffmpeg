@@ -18,8 +18,8 @@ import 'src/closed_caption_file.dart';
 export 'src/closed_caption_file.dart';
 
 final VideoPlayerPlatform _videoPlayerPlatform = VideoPlayerPlatform.instance
-  // This will clear all open videos on the platform when a full restart is
-  // performed.
+// This will clear all open videos on the platform when a full restart is
+// performed.
   ..init();
 
 /// The duration, current position, buffering state, error state and settings
@@ -368,6 +368,31 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         .videoEventsFor(_textureId)
         .listen(eventListener, onError: errorListener);
     return initializingCompleter.future;
+  }
+
+  Future<List<String>> getAudios() async {
+   final audios =  await   _videoPlayerPlatform.getAudios(_textureId);
+   return audios.map((e) => e.toString()).toList();
+  }
+
+  Future<void> setAudio(String audio) async {
+    return _videoPlayerPlatform.setAudio(_textureId, [audio]);
+  }
+  Future<void> setAudioByIndex(int index) async{
+    return _videoPlayerPlatform.setAudioByIndex(_textureId,index);
+
+  }
+  Future<List<String>> getSubtitles() async {
+    final subtitles =  await   _videoPlayerPlatform.getSubtitles(_textureId);
+    return subtitles.map((e) => e.toString()).toList();
+  }
+
+  Future<void> setSubtitle(String subtitle) async {
+    return _videoPlayerPlatform.setSubtitle(_textureId, [subtitle]);
+  }
+  Future<void> setSubtitleByIndex(int index) async{
+    return _videoPlayerPlatform.setSubtitleByIndex(_textureId,index);
+
   }
 
   @override
