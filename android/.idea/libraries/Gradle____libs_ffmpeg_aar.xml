@@ -4,6 +4,9 @@
       <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/extension-ffmpeg-release/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/extension-ffmpeg-release/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/extension-ffmpeg-release/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/ffmpeg/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/ffmpeg/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/39ea38e015a01bc693ad26e19e038972/ffmpeg/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

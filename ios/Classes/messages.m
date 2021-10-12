@@ -22,12 +22,12 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
       };
 }
 
-@interface FLTTextureMessage ()
-+(FLTTextureMessage*)fromMap:(NSDictionary*)dict;
--(NSDictionary*)toMap;
-@end
 @interface FLTCreateMessage ()
 +(FLTCreateMessage*)fromMap:(NSDictionary*)dict;
+-(NSDictionary*)toMap;
+@end
+@interface FLTTextureMessage ()
++(FLTTextureMessage*)fromMap:(NSDictionary*)dict;
 -(NSDictionary*)toMap;
 @end
 @interface FLTLoopingMessage ()
@@ -59,20 +59,6 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
 -(NSDictionary*)toMap;
 @end
 
-@implementation FLTTextureMessage
-+(FLTTextureMessage*)fromMap:(NSDictionary*)dict {
-  FLTTextureMessage* result = [[FLTTextureMessage alloc] init];
-  result.textureId = dict[@"textureId"];
-  if ((NSNull *)result.textureId == [NSNull null]) {
-    result.textureId = nil;
-  }
-  return result;
-}
--(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId", nil];
-}
-@end
-
 @implementation FLTCreateMessage
 +(FLTCreateMessage*)fromMap:(NSDictionary*)dict {
   FLTCreateMessage* result = [[FLTCreateMessage alloc] init];
@@ -92,6 +78,10 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
   if ((NSNull *)result.formatHint == [NSNull null]) {
     result.formatHint = nil;
   }
+  result.textureId = dict[@"textureId"];
+  if ((NSNull *)result.textureId == [NSNull null]) {
+    result.textureId = nil;
+  }
   result.httpHeaders = dict[@"httpHeaders"];
   if ((NSNull *)result.httpHeaders == [NSNull null]) {
     result.httpHeaders = nil;
@@ -99,7 +89,21 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
   return result;
 }
 -(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.httpHeaders ? self.httpHeaders : [NSNull null]), @"httpHeaders", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.textureId ? self.textureId : [NSNull null]), @"textureId", (self.httpHeaders ? self.httpHeaders : [NSNull null]), @"httpHeaders", nil];
+}
+@end
+
+@implementation FLTTextureMessage
++(FLTTextureMessage*)fromMap:(NSDictionary*)dict {
+  FLTTextureMessage* result = [[FLTTextureMessage alloc] init];
+  result.textureId = dict[@"textureId"];
+  if ((NSNull *)result.textureId == [NSNull null]) {
+    result.textureId = nil;
+  }
+  return result;
+}
+-(NSDictionary*)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId", nil];
 }
 @end
 
@@ -259,8 +263,8 @@ void FLTVideoPlayerApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTVi
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         FLTCreateMessage *input = [FLTCreateMessage fromMap:message];
         FlutterError *error;
-        FLTTextureMessage *output = [api create:input error:&error];
-        callback(wrapResult([output toMap], error));
+        [api create:input error:&error];
+        callback(wrapResult(nil, error));
       }];
     }
     else {

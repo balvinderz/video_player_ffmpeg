@@ -50,6 +50,7 @@ class CreateMessage {
   String uri;
   String packageName;
   String formatHint;
+  int textureId;
   Map<String, String> httpHeaders;
 }
 
@@ -60,7 +61,7 @@ class MixWithOthersMessage {
 @HostApi(dartHostTestHandler: 'TestHostVideoPlayerApi')
 abstract class VideoPlayerApi {
   void initialize();
-  TextureMessage create(CreateMessage msg);
+  void create(CreateMessage msg);
   void dispose(TextureMessage msg);
   void setLooping(LoopingMessage msg);
   void setVolume(VolumeMessage msg);

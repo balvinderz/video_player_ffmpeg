@@ -15,25 +15,6 @@ import java.util.HashMap;
 public class Messages {
 
   /** Generated class from Pigeon that represents data sent in messages. */
-  public static class TextureMessage {
-    private Long textureId;
-    public Long getTextureId() { return textureId; }
-    public void setTextureId(Long setterArg) { this.textureId = setterArg; }
-
-    Map<String, Object> toMap() {
-      Map<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("textureId", textureId);
-      return toMapResult;
-    }
-    static TextureMessage fromMap(Map<String, Object> map) {
-      TextureMessage fromMapResult = new TextureMessage();
-      Object textureId = map.get("textureId");
-      fromMapResult.textureId = (textureId == null) ? null : ((textureId instanceof Integer) ? (Integer)textureId : (Long)textureId);
-      return fromMapResult;
-    }
-  }
-
-  /** Generated class from Pigeon that represents data sent in messages. */
   public static class CreateMessage {
     private String asset;
     public String getAsset() { return asset; }
@@ -51,6 +32,10 @@ public class Messages {
     public String getFormatHint() { return formatHint; }
     public void setFormatHint(String setterArg) { this.formatHint = setterArg; }
 
+    private Long textureId;
+    public Long getTextureId() { return textureId; }
+    public void setTextureId(Long setterArg) { this.textureId = setterArg; }
+
     private Map<Object, Object> httpHeaders;
     public Map<Object, Object> getHttpHeaders() { return httpHeaders; }
     public void setHttpHeaders(Map<Object, Object> setterArg) { this.httpHeaders = setterArg; }
@@ -61,6 +46,7 @@ public class Messages {
       toMapResult.put("uri", uri);
       toMapResult.put("packageName", packageName);
       toMapResult.put("formatHint", formatHint);
+      toMapResult.put("textureId", textureId);
       toMapResult.put("httpHeaders", httpHeaders);
       return toMapResult;
     }
@@ -74,8 +60,29 @@ public class Messages {
       fromMapResult.packageName = (String)packageName;
       Object formatHint = map.get("formatHint");
       fromMapResult.formatHint = (String)formatHint;
+      Object textureId = map.get("textureId");
+      fromMapResult.textureId = (textureId == null) ? null : ((textureId instanceof Integer) ? (Integer)textureId : (Long)textureId);
       Object httpHeaders = map.get("httpHeaders");
       fromMapResult.httpHeaders = (Map<Object, Object>)httpHeaders;
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class TextureMessage {
+    private Long textureId;
+    public Long getTextureId() { return textureId; }
+    public void setTextureId(Long setterArg) { this.textureId = setterArg; }
+
+    Map<String, Object> toMap() {
+      Map<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("textureId", textureId);
+      return toMapResult;
+    }
+    static TextureMessage fromMap(Map<String, Object> map) {
+      TextureMessage fromMapResult = new TextureMessage();
+      Object textureId = map.get("textureId");
+      fromMapResult.textureId = (textureId == null) ? null : ((textureId instanceof Integer) ? (Integer)textureId : (Long)textureId);
       return fromMapResult;
     }
   }
@@ -272,7 +279,7 @@ public class Messages {
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
   public interface VideoPlayerApi {
     void initialize();
-    TextureMessage create(CreateMessage arg);
+    void create(CreateMessage arg);
     void dispose(TextureMessage arg);
     void setLooping(LoopingMessage arg);
     void setVolume(VolumeMessage arg);
@@ -319,8 +326,8 @@ public class Messages {
             try {
               @SuppressWarnings("ConstantConditions")
               CreateMessage input = CreateMessage.fromMap((Map<String, Object>)message);
-              TextureMessage output = api.create(input);
-              wrapped.put("result", output.toMap());
+              api.create(input);
+              wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

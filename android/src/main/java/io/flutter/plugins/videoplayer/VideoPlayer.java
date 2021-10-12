@@ -11,6 +11,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.view.Surface;
 
+import android.view.TextureView;
+import android.view.View;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
@@ -31,16 +33,20 @@ import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
+import com.google.android.exoplayer2.text.Cue;
+import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.ui.DefaultTrackNameProvider;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.ui.TrackNameProvider;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
-
+import io.flutter.plugin.platform.PlatformView;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
 
@@ -52,19 +58,19 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
+import java.util.logging.Logger;
+
 @SuppressWarnings("deprecation")
-final class VideoPlayer {
+final class VideoPlayer implements PlatformView {
 
   private static final String FORMAT_SS = "ss";
   private static final String FORMAT_DASH = "dash";
   private static final String FORMAT_HLS = "hls";
   private static final String FORMAT_OTHER = "other";
+  final PlayerView playerView;
 
   private SimpleExoPlayer exoPlayer;
 
-  private Surface surface;
-
-  private final TextureRegistry.SurfaceTextureEntry textureEntry;
 
   private QueuingEventSink eventSink = new QueuingEventSink();
 
@@ -72,28 +78,35 @@ final class VideoPlayer {
 
   private boolean isInitialized = false;
   DefaultTrackSelector trackSelector;
-  private final VideoPlayerOptions options;
+  private VideoPlayerOptions options;
   private Context context;
 
   VideoPlayer(
       Context context,
-      EventChannel eventChannel,
-      TextureRegistry.SurfaceTextureEntry textureEntry,
-      String dataSource,
-      String formatHint,
-      Map<String, String> httpHeaders,
-      VideoPlayerOptions options) {
+      EventChannel eventChannel
+      ) {
     this.eventChannel = eventChannel;
-    this.textureEntry = textureEntry;
     this.context = context;
-    this.options = options;
     trackSelector = new DefaultTrackSelector(context);
     DefaultRenderersFactory defaultRenderersFactory = new DefaultRenderersFactory(context);
     defaultRenderersFactory
         .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+    playerView = new PlayerView(context);
+    playerView.setUseController(false);
+    playerView.forceLayout();
+    playerView.setFitsSystemWindows(true);
     exoPlayer = new SimpleExoPlayer.Builder(context, defaultRenderersFactory)
         .setTrackSelector(trackSelector).build();
+    setupVideoPlayer(eventChannel);
+
+
+  }
+  public void setData(String dataSource,
+      String formatHint,
+      Map<String, String> httpHeaders,
+      VideoPlayerOptions options){
     Uri uri = Uri.parse(dataSource);
+    this.options = options;
     boolean ffmpegAvailable = FfmpegLibrary.isAvailable();
     Log.i("isAvailable", String.valueOf(ffmpegAvailable));
     DataSource.Factory dataSourceFactory;
@@ -114,8 +127,9 @@ final class VideoPlayer {
     MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
     exoPlayer.setMediaSource(mediaSource);
     exoPlayer.prepare();
+    setAudioAttributes(exoPlayer, options.mixWithOthers);
 
-    setupVideoPlayer(eventChannel, textureEntry);
+
   }
 
   private static boolean isHTTP(Uri uri) {
@@ -174,7 +188,7 @@ final class VideoPlayer {
   }
 
   private void setupVideoPlayer(
-      EventChannel eventChannel, TextureRegistry.SurfaceTextureEntry textureEntry) {
+      EventChannel eventChannel) {
     eventChannel.setStreamHandler(
         new EventChannel.StreamHandler() {
           @Override
@@ -188,10 +202,16 @@ final class VideoPlayer {
           }
         });
 
-    surface = new Surface(textureEntry.surfaceTexture());
-    exoPlayer.setVideoSurface(surface);
-    setAudioAttributes(exoPlayer, options.mixWithOthers);
+    playerView.setPlayer(exoPlayer);
+    SubtitleView subtitleView = new SubtitleView(context);
 
+    exoPlayer.addTextOutput(new TextOutput() {
+      @Override
+      public void onCues(List<Cue> cues) {
+
+        subtitleView.setCues(cues);
+      }
+    });
     exoPlayer.addListener(
         new Listener() {
           private boolean isBuffering = false;
@@ -200,7 +220,7 @@ final class VideoPlayer {
             if (isBuffering != buffering) {
               isBuffering = buffering;
               Map<String, Object> event = new HashMap<>();
-              event.put("event", isBuffering ? "b ufferingStart" : "bufferingEnd");
+              event.put("event", isBuffering ? "bufferingStart" : "bufferingEnd");
               eventSink.success(event);
             }
           }
@@ -308,15 +328,17 @@ final class VideoPlayer {
     }
   }
 
-  void dispose() {
+  // Platform view
+  @Override
+  public View getView() {
+    return playerView;
+  }
+  @Override
+  public void dispose() {
     if (isInitialized) {
       exoPlayer.stop();
     }
-    textureEntry.release();
     eventChannel.setStreamHandler(null);
-    if (surface != null) {
-      surface.release();
-    }
     if (exoPlayer != null) {
       exoPlayer.release();
     }

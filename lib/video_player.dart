@@ -183,6 +183,15 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// The name of the asset is given by the [dataSource] argument and must not be
   /// null. The [package] argument must be non-null when the asset comes from a
   /// package and null otherwise.
+  ///
+ 
+  Future<void> onPlatformViewCreated(int viewId) async {
+    _textureId = viewId;
+    // do we need to initialize controller after view becomes ready?
+    await Future.delayed(Duration(seconds: 1));
+    buildViewCompleter.complete();
+    initialize();
+  }
   VideoPlayerController.asset(this.dataSource,
       {this.package, this.closedCaptionFile, this.videoPlayerOptions})
       : dataSourceType = DataSourceType.asset,
@@ -256,6 +265,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   Timer? _timer;
   bool _isDisposed = false;
   Completer<void>? _creatingCompleter;
+  Completer<void> buildViewCompleter = Completer();
+
   StreamSubscription<dynamic>? _eventSubscription;
   late _VideoAppLifeCycleObserver _lifeCycleObserver;
 
@@ -270,11 +281,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   int get textureId => _textureId;
 
   /// Attempts to open the given [dataSource] and load metadata about the video.
-  Future<void> initialize() async {
+  Future<void>  initialize() async {
+    await buildViewCompleter.future;
     _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
     _lifeCycleObserver.initialize();
     _creatingCompleter = Completer<void>();
-
     late DataSource dataSourceDescription;
     switch (dataSourceType) {
       case DataSourceType.asset:
@@ -304,9 +315,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       await _videoPlayerPlatform
           .setMixWithOthers(videoPlayerOptions!.mixWithOthers);
     }
-
-    _textureId = (await _videoPlayerPlatform.create(dataSourceDescription)) ??
-        kUninitializedTextureId;
+   (await _videoPlayerPlatform.create(_textureId,dataSourceDescription));
     _creatingCompleter!.complete(null);
     final Completer<void> initializingCompleter = Completer<void>();
 
@@ -527,7 +536,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _videoPlayerPlatform.seekTo(_textureId, position);
     _updatePosition(position);
   }
-
   /// Sets the audio volume of [this].
   ///
   /// [volume] indicates a value between 0.0 (silent) and 1.0 (full volume) on a
@@ -660,6 +668,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   late VoidCallback _listener;
 
   late int _textureId;
+  late int _viewId;
 
   @override
   void initState() {
@@ -686,9 +695,13 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return _textureId == VideoPlayerController.kUninitializedTextureId
-        ? Container()
-        : _videoPlayerPlatform.buildView(_textureId);
+    return
+      Stack(children: <Widget>[
+
+        _videoPlayerPlatform
+            .buildView(_textureId,onPlatformViewCreated : widget.controller.onPlatformViewCreated)
+        ],
+    );
   }
 }
 
